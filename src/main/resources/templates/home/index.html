@@ -263,6 +263,15 @@
             <a class="btn btn-outline-primary btn-custom" th:href="@{/students}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
               <i class="bi bi-person-lines-fill"></i> 学生列表
             </a>
+            <a class="btn btn-outline-primary btn-custom" th:href="@{/students/manage}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
+              <i class="bi bi-person-gear"></i> 学生信息管理
+            </a>
+            <a class="btn btn-outline-primary btn-custom" th:href="@{/students/manage/new}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
+              <i class="bi bi-person-plus"></i> 新生信息录入
+            </a>
+            <a class="btn btn-outline-secondary btn-custom" th:href="@{/students/history}">
+              <i class="bi bi-archive"></i> 学生历史（转学/毕业）
+            </a>
             <a class="btn btn-light btn-custom text-start ps-3" th:href="@{/students/enrollments}">
               <small class="text-muted"><i class="bi bi-chevron-right"></i> 查看选课情况</small>
             </a>
