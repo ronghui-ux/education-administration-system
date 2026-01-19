@@ -59,7 +59,7 @@
         <td th:text="${s.studentId}">S2023001</td>
         <td th:text="${s.name}">张三</td>
         <td th:text="${s.gender}">男</td>
-        <td th:text="${s.dob != null ? (isManageContext ? s.dob : #temporals.format(s.dob, 'yyyy-MM-dd')) : ''}">2005-09-01</td>
+        <td th:text="${s.dob != null ? #temporals.format(s.dob, 'yyyy-MM-dd') : ''}">2005-09-01</td>
         <td th:text="${s.admissionScore}">620.00</td>
         <td th:text="${s.deptId}">CS01</td>
         <td th:if="${isManageContext}">

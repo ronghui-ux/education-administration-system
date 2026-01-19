@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 学生基本信息管理：
@@ -61,9 +62,12 @@ public class StudentManageController {
     // 编辑表单（按学号进入）
     @GetMapping("/{id}/edit")
     public String editForm(@PathVariable("id") String id, Model model) {
-        return studentService.findById(id)
-                .map(s -> { model.addAttribute("student", s); return "students/form"; })
-                .orElse("redirect:/students/manage");
+        Optional<Student> student = studentService.findById(id);
+        if (student.isPresent()) {
+            model.addAttribute("student", student.get());
+            return "students/form";
+        }
+        return "redirect:/students/manage";
     }
 
     // 保存（新增/编辑）
