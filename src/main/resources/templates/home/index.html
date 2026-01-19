@@ -260,8 +260,11 @@
           </h5>
           <p class="hint">学生基本信息维护与选课概况。</p>
           <div class="d-grid gap-2">
-            <a class="btn btn-outline-primary btn-custom" th:href="@{/students}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
-              <i class="bi bi-person-lines-fill"></i> 学生列表
+            <a class="btn btn-outline-primary btn-custom" th:href="@{/students/manage}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
+              <i class="bi bi-person-lines-fill"></i> 学生基本信息管理
+            </a>
+            <a class="btn btn-light btn-custom text-start ps-3" th:href="@{/students/history}">
+              <small class="text-muted"><i class="bi bi-archive"></i> 学生历史（转学/毕业）</small>
             </a>
             <a class="btn btn-light btn-custom text-start ps-3" th:href="@{/students/enrollments}">
               <small class="text-muted"><i class="bi bi-chevron-right"></i> 查看选课情况</small>
