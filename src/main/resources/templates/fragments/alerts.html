@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 全局提示片段：统一成功/失败提示与批量结果摘要 -->
+<th:block th:fragment="globalAlerts">
+  <!-- 失败提示（优先显示 errorMsg，其次 err） -->
+  <div th:if="${errorMsg != null || err != null}" class="alert alert-danger" role="alert">
+    <strong>操作失败：</strong>
+    <span th:text="${errorMsg != null ? errorMsg : err}">发生错误</span>
+  </div>
+
+  <!-- 成功提示（优先显示 successMsg，其次 ok） -->
+  <div th:if="${successMsg != null || ok != null}" class="alert alert-success" role="alert">
+    <strong>操作成功。</strong>
+    <span th:text="${successMsg != null ? successMsg : '选课成功'}">选课成功</span>
+  </div>
+
+  <!-- 批量/矩阵结果摘要 + 失败详情折叠 -->
+  <div th:if="${okCount != null || failCount != null}">
+    <div class="alert" th:classappend="${failCount == 0} ? ' alert-success' : ' alert-warning'" role="alert">
+      执行完成：成功 <strong th:text="${okCount ?: 0}">0</strong>，失败 <strong th:text="${failCount ?: 0}">0</strong>。
+      <a class="ms-3" data-bs-toggle="collapse" href="#batchFailDetails" role="button" aria-expanded="false" aria-controls="batchFailDetails"
+         th:if="${failCount != null && failCount > 0}">
+        查看失败详情
+      </a>
+    </div>
+    <div id="batchFailDetails" class="collapse" th:if="${result != null}">
+      <ul class="list-group">
+        <li class="list-group-item list-group-item-danger"
+            th:each="r : ${result}" th:if="${!r.success}">
+          <strong th:text="|学号 ${r.studentId}，课程 ${r.courseId}|">学号 / 课程</strong>
+          ：<span th:text="${r.message}">错误信息</span>
+        </li>
+      </ul>
+      <div class="form-text mt-2">提示：常见失败原因包括重复选课、超过学分上限 15、课程或学生不存在。</div>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

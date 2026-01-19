@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>学生已选课程查询</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="container mt-4">
+<h2>查询学生已选课程与学分</h2>
+
+<form class="row g-3 mb-3" method="get" th:action="@{/students/enrollments}">
+    <div class="col-md-4">
+        <label class="form-label">学号</label>
+        <input name="studentId" th:value="${studentId}" class="form-control" placeholder="例如 S2023001" required/>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">学期</label>
+        <input name="term" th:value="${term}" class="form-control" placeholder="2025-2026-1" />
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">查询</button>
+        <a th:href="@{/students}" class="btn btn-secondary">返回学生列表</a>
+    </div>
+</form>
+
+<div th:if="${studentId == null || studentId == ''}">
+    <div class="alert alert-info">请输入学号并点击“查询”来查看选课记录。</div>
+</div>
+
+<div th:if="${studentId != null && studentId != ''}">
+    <h5>
+        查询结果：学号 <span th:text="${studentId}"></span>
+        <span th:if="${student != null}">
+        &nbsp;|&nbsp; 姓名：<strong th:text="${student.name}">张三</strong>
+        &nbsp;|&nbsp; 系别：<span th:text="${student.deptId}">CS</span>
+      </span>
+        <span th:if="${student == null}" class="text-muted">（学生信息未找到）</span>
+        ，学期 <span th:text="${term}"></span>
+    </h5>
+
+    <div th:if="${resultCount == 0}">
+        <div class="alert alert-warning">未找到任何选课记录。</div>
+    </div>
+
+    <div th:if="${resultCount > 0}">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>课程号</th>
+                <th>课程名</th>
+                <th>学分</th>
+                <th>教师</th>
+                <th>上课时间</th>
+                <th>地点</th>
+                <th>选课状态</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="rec : ${records}">
+                <td th:text="${rec.course != null ? rec.course.courseId : rec.enrollment.courseId}">C001</td>
+                <td th:text="${rec.course != null ? rec.course.name : '（课程已删除）'}">数据库系统</td>
+                <td th:text="${rec.course != null && rec.course.credits != null ? rec.course.credits : '0'}">3.0</td>
+                <td th:text="${rec.course != null ? rec.course.teacherId : ''}">T1001</td>
+                <td th:text="${rec.course != null ? rec.course.schedule : ''}">周一 9:00</td>
+                <td th:text="${rec.course != null ? rec.course.location : ''}">A101</td>
+                <td th:text="${rec.enrollment.status}">selected</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="mt-3">
+            <strong>累计学分：</strong>
+            <span th:text="${totalCredits}">0</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

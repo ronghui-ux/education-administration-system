@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>教务系统 - 功能导航</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+  <style>
+    :root {
+      /* Modern Color Palette */
+      --primary-bg: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+
+      /* Brand Colors */
+      --brand-blue: #3b82f6;   /* For Courses */
+      --brand-green: #10b981;  /* For Enrollments */
+      --brand-orange: #f59e0b; /* For Grades */
+      --brand-purple: #8b5cf6; /* For Students */
+      --brand-gray: #4b5563;   /* For Admin */
+    }
+
+    body {
+      background-color: var(--primary-bg);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      color: var(--text-main);
+      padding-bottom: 3rem;
+    }
+
+    /* Hero Header Area */
+    .hero-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      color: white;
+      padding: 3rem 1rem;
+      margin-bottom: 2rem;
+      border-radius: 0 0 2rem 2rem;
+      box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+    }
+
+    .hero-header h2 {
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-badge {
+      background: rgba(255,255,255,0.2);
+      backdrop-filter: blur(5px);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Section Styling */
+    .section-label {
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin: 2rem 0 1rem 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e5e7eb;
+    }
+
+    /* Card Styling */
+    .nav-card {
+      border: none;
+      border-radius: 16px;
+      background: var(--card-bg);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      transition: all 0.3s ease;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .nav-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    }
+
+    /* Left accent border for cards */
+    .card-accent-blue { border-left: 5px solid var(--brand-blue); }
+    .card-accent-green { border-left: 5px solid var(--brand-green); }
+    .card-accent-orange { border-left: 5px solid var(--brand-orange); }
+    .card-accent-purple { border-left: 5px solid var(--brand-purple); }
+    .card-accent-gray { border-left: 5px solid var(--brand-gray); }
+
+    .nav-card h5 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-card p.hint {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      min-height: 2.5rem; /* Alignment aid */
+    }
+
+    /* Button Styling */
+    .btn-custom {
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .btn-light-brand {
+      background-color: #f0f7ff;
+      color: var(--brand-blue);
+      border: 1px solid transparent;
+    }
+    .btn-light-brand:hover {
+      background-color: var(--brand-blue);
+      color: white;
+    }
+
+    /* Icons within headers */
+    .icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 8px;
+      font-size: 1rem;
+    }
+    .bg-blue-soft { background: #eff6ff; color: var(--brand-blue); }
+    .bg-green-soft { background: #ecfdf5; color: var(--brand-green); }
+    .bg-orange-soft { background: #fffbeb; color: var(--brand-orange); }
+    .bg-purple-soft { background: #f5f3ff; color: var(--brand-purple); }
+    .bg-gray-soft { background: #f3f4f6; color: var(--brand-gray); }
+
+  </style>
+</head>
+<body>
+
+<!-- Modern Header -->
+<header class="hero-header">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-end">
+      <div>
+        <h2 class="mb-2"><i class="bi bi-grid-fill me-2"></i>教务系统</h2>
+        <div class="opacity-75">一站式教务管理与服务平台</div>
+      </div>
+      <div class="text-end d-none d-md-block">
+        <div class="hero-badge">
+          <i class="bi bi-calendar-event"></i>
+          <span th:text="${#temporals.format(today, 'yyyy年MM月dd日')}">2026年01月19日</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ROW 1: Core Academics (Courses & Enrollment) -->
+  <div class="row g-4">
+    <!-- 课程管理 -->
+    <div class="col-lg-5">
+      <div class="section-label">Core Modules</div>
+      <div class="card nav-card card-accent-blue">
+        <div class="card-body">
+          <h5>
+            <span class="icon-box bg-blue-soft"><i class="bi bi-journal-text"></i></span>
+            课程管理
+          </h5>
+          <p class="hint">课程全生命周期管理：新增、编辑、删除及各类报表导出。</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-primary btn-custom" th:href="@{/courses}"><i class="bi bi-list"></i> 列表</a>
+            <a class="btn btn-outline-primary btn-custom" th:href="@{/courses/new}"><i class="bi bi-plus-lg"></i> 新增</a>
+            <a class="btn btn-light-brand btn-custom" th:href="@{/courses/search}"><i class="bi bi-search"></i> 搜索/导出</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 选课功能 -->
+    <div class="col-lg-7">
+      <div class="section-label">Enrollment</div>
+      <div class="card nav-card card-accent-green">
+        <div class="card-body">
+          <h5>
+            <span class="icon-box bg-green-soft"><i class="bi bi-check2-circle"></i></span>
+            选课中心
+          </h5>
+          <p class="hint">处理学生选课请求，支持单门、批量及矩阵式（多对多）操作。</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-success btn-custom text-white" th:href="@{/enroll/browse}">
+              <i class="bi bi-cursor"></i> 按课程选课
+            </a>
+            <a class="btn btn-outline-success btn-custom" th:href="@{/enroll/manage}">
+              <i class="bi bi-list-check"></i> 批量管理
+            </a>
+            <a class="btn btn-outline-success btn-custom" th:href="@{/enroll/matrix}">
+              <i class="bi bi-grid-3x3"></i> 矩阵批量
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Scores & Students -->
+  <div class="row g-4 mt-1">
+    <!-- 成绩管理 -->
+    <div class="col-lg-8">
+      <div class="section-label">Academic Records</div>
+      <div class="card nav-card card-accent-orange">
+        <div class="card-body">
+          <h5>
+            <span class="icon-box bg-orange-soft"><i class="bi bi-award"></i></span>
+            成绩管理
+          </h5>
+          <p class="hint">成绩录入、审核与查询。支持按维度查看及综合报表。</p>
+          <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-warning btn-custom text-white" th:href="@{/scores/manage}">
+              <i class="bi bi-pencil-square"></i> 录入管理
+            </a>
+            <div class="vr mx-1 opacity-25"></div>
+            <a class="btn btn-outline-secondary btn-custom" th:href="@{/scores/by-course}">按课程</a>
+            <a class="btn btn-outline-secondary btn-custom" th:href="@{/scores/by-student}">按学生</a>
+            <a class="btn btn-outline-secondary btn-custom" th:href="@{/scores/search}">综合查询</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 学生管理 -->
+    <div class="col-lg-4">
+      <div class="section-label">Students</div>
+      <div class="card nav-card card-accent-purple">
+        <div class="card-body">
+          <h5>
+            <span class="icon-box bg-purple-soft"><i class="bi bi-people-fill"></i></span>
+            学生档案
+          </h5>
+          <p class="hint">学生基本信息维护与选课概况。</p>
+          <div class="d-grid gap-2">
+            <a class="btn btn-outline-primary btn-custom" th:href="@{/students}" style="color: var(--brand-purple); border-color: var(--brand-purple);">
+              <i class="bi bi-person-lines-fill"></i> 学生列表
+            </a>
+            <a class="btn btn-light btn-custom text-start ps-3" th:href="@{/students/enrollments}">
+              <small class="text-muted"><i class="bi bi-chevron-right"></i> 查看选课情况</small>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Administration (Staff & Dept) -->
+  <div class="row g-4 mt-1">
+    <div class="col-12"><div class="section-label">Administration</div></div>
+
+    <!-- 教职工管理 -->
+    <div class="col-md-6">
+      <div class="card nav-card card-accent-gray h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div>
+            <h5>
+              <span class="icon-box bg-gray-soft"><i class="bi bi-briefcase"></i></span>
+              教职工管理
+            </h5>
+            <p class="hint mb-2">教师资源的录入与维护。</p>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-light btn-custom flex-fill border" th:href="@{/staffs}">列表</a>
+            <a class="btn btn-dark btn-custom flex-fill" th:href="@{/staffs/new}">新增</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 部门管理 -->
+    <div class="col-md-6">
+      <div class="card nav-card card-accent-gray h-100">
+        <div class="card-body d-flex flex-column justify-content-between">
+          <div>
+            <h5>
+              <span class="icon-box bg-gray-soft"><i class="bi bi-building"></i></span>
+              院系架构
+            </h5>
+            <p class="hint mb-2">学校组织架构与专业设置。</p>
+          </div>
+          <div class="d-flex gap-2 mt-3">
+            <a class="btn btn-light btn-custom flex-fill border" th:href="@{/departments}">列表</a>
+            <a class="btn btn-dark btn-custom flex-fill" th:href="@{/departments/new}">新增</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="mt-5 pt-4 border-top text-center text-muted">
+    <small>© <span th:text="${#temporals.format(today, 'yyyy')}">2026</span> 教务管理系统 · 让教育管理更简单</small>
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

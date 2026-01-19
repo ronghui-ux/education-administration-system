@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>课程选课</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="container mt-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>课程选课</h2>
+    <div>
+        <a th:href="@{/enroll/manage}" class="btn btn-outline-primary">进入选课批量管理</a>
+        <a th:href="@{/courses}" class="btn btn-outline-secondary ms-2">课程管理</a>
+    </div>
+</div>
+
+<!-- 统一提示 -->
+<div th:replace="fragments/alerts :: globalAlerts"></div>
+
+<!-- 学生与学期 + 课程筛选 -->
+<form class="row g-3 mb-3" method="get" th:action="@{/enroll/browse}">
+    <div class="col-md-3">
+        <label class="form-label">学号</label>
+        <input name="studentId" th:value="${studentId}" class="form-control" placeholder="S2023001" required/>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">学期</label>
+        <input name="term" th:value="${term}" class="form-control" placeholder="2025-2026-1" required/>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">课程号</label>
+        <input name="courseId" th:value="${courseId}" class="form-control" placeholder="C001"/>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">课程名</label>
+        <input name="name" th:value="${name}" class="form-control" placeholder="数据库系统"/>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">教师姓名</label>
+        <input name="teacher" th:value="${teacher}" class="form-control" placeholder="张老师"/>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">搜索课程</button>
+        <a th:href="@{/enroll/browse}" class="btn btn-outline-secondary ms-2">清空</a>
+    </div>
+</form>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+    <tr>
+        <th>课程号</th>
+        <th>课程名</th>
+        <th>教师号</th>
+        <th>教师姓名</th>
+        <th>学时</th>
+        <th>学分</th>
+        <th>上课时间</th>
+        <th>地点</th>
+        <th>考试时间</th>
+        <th style="width:120px;">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="c : ${courses}">
+        <td th:text="${c.courseId}">C001</td>
+        <td th:text="${c.name}">数据库系统</td>
+        <td th:text="${c.teacherId}">T1001</td>
+        <td th:text="${c.teacherId == null || c.teacherId == ''
+                      ? '未指定'
+                      : (teacherNameMap != null && teacherNameMap[c.teacherId] != null
+                           ? teacherNameMap[c.teacherId]
+                           : '未找到')}">教师姓名</td>
+        <td th:text="${c.hours}">48</td>
+        <td th:text="${c.credits}">3.0</td>
+        <td th:text="${c.schedule}">周一 9:00</td>
+        <td th:text="${c.location}">A101</td>
+        <td th:text="${#temporals.format(c.examTime, 'yyyy-MM-dd HH:mm')}">2026-01-01 09:00</td>
+        <td>
+            <form th:action="@{/enroll/browse/select}" method="post" class="d-inline">
+                <input type="hidden" name="courseId" th:value="${c.courseId}"/>
+                <input type="hidden" name="studentId" th:value="${studentId}"/>
+                <input type="hidden" name="term" th:value="${term}"/>
+                <button type="submit" class="btn btn-sm btn-success"
+                        th:disabled="${studentId == null || studentId == ''}">选课</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="form-text">提示：请先在上方填写“学号”和“学期”，再点击列表中的“选课”。</div>
+
+<!-- Bootstrap JS 以支持折叠/提示组件 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

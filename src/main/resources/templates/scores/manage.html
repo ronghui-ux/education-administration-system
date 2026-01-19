@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>成绩录入与修改</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="container mt-4">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>成绩录入与修改</h2>
+    <div>
+        <a th:href="@{/scores/search}" class="btn btn-outline-secondary">成绩综合查询</a>
+        <a th:href="@{/reports/grades.csv(term=${term},courseId=${courseId})}" class="btn btn-outline-primary ms-2"
+           th:disabled="${#strings.isEmpty(term) || #strings.isEmpty(courseId)}">导出成绩报表 CSV</a>
+    </div>
+</div>
+
+<!-- 统一提示 -->
+<div th:replace="fragments/alerts :: globalAlerts"></div>
+
+<form class="row g-3 mb-3" method="get" th:action="@{/scores/manage}">
+    <div class="col-md-3">
+        <label class="form-label">课程号</label>
+        <input name="courseId" th:value="${courseId}" class="form-control" placeholder="C001" required/>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">学期</label>
+        <input name="term" th:value="${term}" class="form-control" placeholder="2025-2026-1" required/>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">载入选课学生</button>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+      <span class="form-text" th:if="${courseName != null}">
+        课程：<strong th:text="${courseName}">课程名</strong>（教师：
+        <span th:text="${teacherName != null ? teacherName : (teacherId != null ? teacherId : '未指定')}">教师</span>）
+      </span>
+    </div>
+</form>
+
+<div th:if="${records == null || #lists.isEmpty(records)}">
+    <div class="alert alert-info">未查询到该课程在该学期的选课记录。</div>
+</div>
+
+<div th:if="${records != null && !#lists.isEmpty(records)}">
+    <!-- 批量保存：一个大表单 -->
+    <form method="post" th:action="@{/scores/manage/batch}">
+        <input type="hidden" name="courseId" th:value="${courseId}"/>
+        <input type="hidden" name="term" th:value="${term}"/>
+
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th style="width:160px;">学号</th>
+                <th style="width:200px;">平时成绩 (0-100)</th>
+                <th style="width:200px;">考试成绩 (0-100)</th>
+                <th style="width:180px;">总评成绩</th>
+                <th style="width:200px;">单行保存</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="e,idx : ${records}">
+                <td>
+                    <input type="hidden" name="studentId" th:value="${e.studentId}"/>
+                    <span th:text="${e.studentId}">S2023001</span>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" max="100"
+                           name="usualScore"
+                           th:value="${e.usualScore}"
+                           class="form-control" placeholder="平时"/>
+                </td>
+                <td>
+                    <input type="number" step="0.01" min="0" max="100"
+                           name="examScore"
+                           th:value="${e.examScore}"
+                           class="form-control" placeholder="考试"/>
+                </td>
+                <td>
+                    <span th:text="${e.totalScore}">90.40</span>
+                    <span class="form-text d-block">总评=0.4×平时 + 0.6×考试</span>
+                </td>
+                <td>
+                    <form th:action="@{/scores/manage/update}" method="post" class="d-inline">
+                        <input type="hidden" name="studentId" th:value="${e.studentId}"/>
+                        <input type="hidden" name="courseId" th:value="${e.courseId}"/>
+                        <input type="hidden" name="term" th:value="${e.term}"/>
+                        <input type="hidden" name="usualScore" th:value="${e.usualScore}"/>
+                        <input type="hidden" name="examScore" th:value="${e.examScore}"/>
+                        <button type="submit" class="btn btn-sm btn-secondary">保存当前行</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">批量保存全部</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
