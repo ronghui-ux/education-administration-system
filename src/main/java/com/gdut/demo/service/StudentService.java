@@ -4,13 +4,10 @@ import com.gdut.demo.model.Student;
 import com.gdut.demo.model.StudentHistory;
 import com.gdut.demo.repository.StudentHistoryRepository;
 import com.gdut.demo.repository.StudentRepository;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,22 +36,16 @@ public class StudentService {
                 .findByStudentIdContainingIgnoreCaseOrNameContainingIgnoreCaseOrDeptIdContainingIgnoreCase(kw, kw, kw);
     }
 
-    // 新增：按学号/姓名/系号的任意组合进行模糊查询
+    // 组合查询：学号单独给则走精确匹配；其它情况使用原生 ILIKE 组合过滤
     public List<Student> searchByFilters(String studentId, String name, String deptId) {
-        Specification<Student> spec = (root, query, cb) -> {
-            List<Predicate> preds = new ArrayList<>();
-            if (studentId != null && !studentId.isBlank()) {
-                preds.add(cb.like(cb.lower(root.get("studentId")), "%" + studentId.trim().toLowerCase() + "%"));
-            }
-            if (name != null && !name.isBlank()) {
-                preds.add(cb.like(cb.lower(root.get("name")), "%" + name.trim().toLowerCase() + "%"));
-            }
-            if (deptId != null && !deptId.isBlank()) {
-                preds.add(cb.like(cb.lower(root.get("deptId")), "%" + deptId.trim().toLowerCase() + "%"));
-            }
-            return preds.isEmpty() ? cb.conjunction() : cb.and(preds.toArray(new Predicate[0]));
-        };
-        return studentRepository.findAll(spec);
+        String sid = blankToNull(studentId);
+        String nm  = blankToNull(name);
+        String did = blankToNull(deptId);
+
+        if (sid != null && nm == null && did == null) {
+            return studentRepository.findByStudentIdIgnoreCase(sid);
+        }
+        return studentRepository.searchByFiltersNative(sid, nm, did);
     }
 
     public Optional<Student> findById(String studentId) {
@@ -63,14 +54,18 @@ public class StudentService {
     }
 
     public Student save(Student student) {
+        if (student.getStudentId() != null) {
+            student.setStudentId(student.getStudentId().trim());
+        }
+        if (student.getDeptId() != null) {
+            student.setDeptId(student.getDeptId().trim());
+        }
         return studentRepository.save(student);
     }
 
     public void deleteById(String studentId) {
         studentRepository.deleteById(studentId.trim());
     }
-
-    /* ---------- 历史与转学/毕业处理 ---------- */
 
     @Transactional
     public void graduate(String studentId, String note, LocalDateTime movedAt) {
@@ -104,6 +99,12 @@ public class StudentService {
         h.setNote(note);
         h.setMovedAt(movedAt == null ? LocalDateTime.now() : movedAt);
         historyRepository.save(h);
-        studentRepository.deleteById(s.getStudentId());
+        studentRepository.delete(s);
+    }
+
+    private String blankToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
     }
 }

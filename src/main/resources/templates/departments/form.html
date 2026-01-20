@@ -7,34 +7,23 @@
 </head>
 <body class="container mt-4">
 <h2 th:text="${department != null && department.deptId != null ? '编辑系信息' : '新增系'}">系信息表单</h2>
-
-<!-- 关键：设置 th:object，使 *{...} 可解析 -->
-<form th:object="${department}" th:action="@{/departments}" method="post">
-    <div class="mb-3">
+<form th:object="${department}" th:action="@{/departments}" method="post" class="row g-3">
+    <div class="col-md-4">
         <label class="form-label">系号</label>
-        <input th:field="*{deptId}" class="form-control"
-               th:readonly="${department != null && department.deptId != null}"
-               required
-               th:classappend="${#fields.hasErrors('deptId')} ? ' is-invalid' : ''"/>
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('deptId')}" th:errors="*{deptId}"></div>
+        <input th:field="*{deptId}" class="form-control" required/>
     </div>
-
-    <div class="mb-3">
-        <label class="form-label">系名称</label>
-        <input th:field="*{name}" class="form-control" required
-               th:classappend="${#fields.hasErrors('name')} ? ' is-invalid' : ''"/>
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    <div class="col-md-8">
+        <label class="form-label">名称</label>
+        <input th:field="*{name}" class="form-control" required/>
     </div>
-
-    <div class="mb-3">
+    <div class="col-12">
         <label class="form-label">简介</label>
-        <textarea th:field="*{intro}" class="form-control" rows="4"
-                  th:classappend="${#fields.hasErrors('intro')} ? ' is-invalid' : ''"></textarea>
-        <div class="invalid-feedback" th:if="${#fields.hasErrors('intro')}" th:errors="*{intro}"></div>
+        <textarea th:field="*{intro}" class="form-control" rows="3"></textarea>
     </div>
-
-    <button type="submit" class="btn btn-primary">保存</button>
-    <a th:href="@{/departments}" class="btn btn-secondary">取消</a>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">保存</button>
+        <a th:href="@{/departments}" class="btn btn-outline-secondary ms-2">返回</a>
+    </div>
 </form>
 </body>
 </html>

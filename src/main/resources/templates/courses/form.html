@@ -9,24 +9,35 @@
 <h2 th:text="${course != null && course.courseId != null ? '编辑课程' : '新增课程'}">课程表单</h2>
 
 <form th:object="${course}" th:action="@{/courses}" method="post">
-  <!-- 上面内容保持不变 -->
-
-  <div class="mb-3">
-    <label class="form-label">教师</label>
-    <select th:field="*{teacherId}" class="form-select">
-      <option value="" th:text="'未指定'"></option>
-      <!-- 方案A：用字面量替换 + 半角括号 -->
-      <option th:each="t : ${staffs}" th:value="${t.staffId}" th:text="|${t.name} (${t.staffId})|"></option>
-
-      <!-- 方案B（备选）：用字符串拼接 + 半角括号
-      <option th:each="t : ${staffs}" th:value="${t.staffId}"
-              th:text="${t.name} + ' (' + ${t.staffId} + ')'"></option>
-      -->
-    </select>
-    <div class="form-text">可选择教师或留空。</div>
+  <!-- 课程基础信息 -->
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">课程号</label>
+      <input th:field="*{courseId}" class="form-control" placeholder="C001"
+             th:readonly="${course != null && course.courseId != null}"
+             th:classappend="${#fields.hasErrors('courseId')} ? ' is-invalid' : ''" required/>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('courseId')}" th:errors="*{courseId}"></div>
+      <div class="form-text" th:if="${course != null && course.courseId != null}">编辑时不允许修改课程号。</div>
+    </div>
+    <div class="col-md-8">
+      <label class="form-label">课程名</label>
+      <input th:field="*{name}" class="form-control" placeholder="数据库系统"
+             th:classappend="${#fields.hasErrors('name')} ? ' is-invalid' : ''" required/>
+      <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+    </div>
   </div>
 
-  <!-- 下面内容保持不变 -->
+  <!-- 教师选择 -->
+  <div class="mb-3 mt-3">
+    <label class="form-label">教师</label>
+    <select th:field="*{teacherId}" class="form-select">
+      <option value="">未指定</option>
+      <option th:each="t : ${staffs}" th:value="${t.staffId}" th:text="|${t.name} (${t.staffId})|"></option>
+    </select>
+    <div class="form-text">可选择任课教师或留空。</div>
+  </div>
+
+  <!-- 课程详细信息 -->
   <div class="row g-3">
     <div class="col-md-4">
       <label class="form-label">学时</label>
@@ -41,24 +52,24 @@
     <div class="col-md-4">
       <label class="form-label">考试时间</label>
       <input th:field="*{examTime}" type="datetime-local" class="form-control"/>
-      <div class="form-text">格式：YYYY-MM-DDTHH:mm，例如 2026-01-01T09:00</div>
+      <div class="form-text">格式示例：2026-01-01T09:00</div>
     </div>
   </div>
 
   <div class="row g-3 mt-1">
     <div class="col-md-6">
       <label class="form-label">上课时间</label>
-      <input th:field="*{schedule}" class="form-control"/>
+      <input th:field="*{schedule}" class="form-control" placeholder="周一 9:00"/>
     </div>
     <div class="col-md-6">
       <label class="form-label">地点</label>
-      <input th:field="*{location}" class="form-control"/>
+      <input th:field="*{location}" class="form-control" placeholder="教学楼 A-101"/>
     </div>
   </div>
 
   <div class="mt-3">
     <button type="submit" class="btn btn-primary">保存</button>
-    <a th:href="@{/courses}" class="btn btn-secondary">取消</a>
+    <a th:href="@{/courses}" class="btn btn-outline-secondary ms-2">返回列表</a>
   </div>
 </form>
 </body>
