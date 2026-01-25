@@ -2,13 +2,13 @@ package com.gdut.demo.repository;
 
 import com.gdut.demo.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface StudentRepository extends JpaRepository<Student, String>, JpaSpecificationExecutor<Student> {
+public interface StudentRepository extends JpaRepository<Student, String> {
 
     // 单关键字模糊搜索（保留）
     List<Student> findByStudentIdContainingIgnoreCaseOrNameContainingIgnoreCaseOrDeptIdContainingIgnoreCase(
@@ -18,8 +18,19 @@ public interface StudentRepository extends JpaRepository<Student, String>, JpaSp
     // 精确学号（大小写不敏感）
     List<Student> findByStudentIdIgnoreCase(String studentId);
 
-    // 组合过滤（原生 SQL）：任意条件可选，大小写不敏感，模糊匹配
-    // openGauss/PostgreSQL 使用 ILIKE 实现不区分大小写的 like
+    // 统计：按系号大小写不敏感计数（用于删除系时展示引用数）
+    long countByDeptIdIgnoreCase(String deptId);
+
+    // 原生SQL：按学号忽略大小写精确查找，使用 LIMIT 1（避免 FETCH FIRST ? ROWS ONLY）
+    @Query(value = """
+            select s.*
+            from edu.student s
+            where upper(s.student_id) = upper(:sid)
+            limit 1
+            """, nativeQuery = true)
+    Optional<Student> findOneIgnoreCaseNative(@Param("sid") String studentId);
+
+    // 组合过滤（原生 SQL，openGauss/PostgreSQL ILIKE 大小写不敏感）
     @Query(value = """
             select s.*
             from edu.student s

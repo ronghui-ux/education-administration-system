@@ -14,6 +14,10 @@
     </div>
 </div>
 
+<!-- 服务端删除提示 -->
+<div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+<div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
 <form class="row g-3 mb-3" method="get" th:action="@{/courses}">
     <div class="col-md-3">
         <label class="form-label">课程号</label>
@@ -45,7 +49,7 @@
         <th>上课时间</th>
         <th>地点</th>
         <th>考试时间</th>
-        <th style="width:180px;">操作</th>
+        <th style="width:220px;">操作</th>
     </tr>
     </thead>
     <tbody>
@@ -53,7 +57,6 @@
         <td th:text="${c.courseId}">C001</td>
         <td th:text="${c.name}">数据库系统</td>
         <td th:text="${c.teacherId}">T1001</td>
-        <!-- 教师姓名：空值与键存在性保护 -->
         <td th:text="${c.teacherId == null || c.teacherId == ''
                       ? '未指定'
                       : (teacherNameMap != null && teacherNameMap[c.teacherId] != null
@@ -66,8 +69,10 @@
         <td th:text="${#temporals.format(c.examTime, 'yyyy-MM-dd HH:mm')}">2026-01-01 09:00</td>
         <td>
             <a th:href="@{|/courses/${c.courseId}/edit|}" class="btn btn-sm btn-secondary">编辑</a>
-            <form th:action="@{|/courses/${c.courseId}/delete|}" method="post" class="d-inline"
-                  onsubmit="return confirm('确认删除该课程？');">
+            <!-- 改为调用安全删除端点 delete-safe，避免与旧端点冲突 -->
+            <form th:action="@{|/courses/${c.courseId}/delete-safe|}" method="post" class="d-inline"
+                  onsubmit="return confirm('确认删除课程 ' + (this.dataset.cid || '') + '？如果课程已被选或已有成绩，将拒绝删除。');"
+                  th:attr="data-cid=${c.courseId}">
                 <button type="submit" class="btn btn-sm btn-danger">删除</button>
             </form>
         </td>

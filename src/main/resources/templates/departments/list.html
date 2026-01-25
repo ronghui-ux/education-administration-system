@@ -18,7 +18,9 @@
         <a class="btn btn-outline-secondary" th:href="@{/departments}">清空</a>
     </div>
 </form>
-
+<!-- 在表格上方增加消息提示区 -->
+<div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+<div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
 <table class="table table-bordered table-hover">
     <thead class="table-light">
     <tr>

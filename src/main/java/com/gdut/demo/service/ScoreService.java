@@ -29,20 +29,22 @@ public class ScoreService {
         this.scoreRepository = scoreRepository;
     }
 
-    /* ========== 成绩查询（返回 List<Score>）供各控制器使用 ========== */
+    /* ========== 成绩查询（大小写不敏感） ========== */
 
-    // 保持旧方法名，返回成绩列表（修复“List<Score> 无法转为 List<Enrollment”的来源）
     public List<Score> listByCourseAndTerm(String courseId, String term) {
-        if (isBlank(courseId) || isBlank(term)) return List.of();
-        return scoreRepository.findByIdCourseIdAndIdTerm(courseId.trim(), term.trim());
+        String cid = t(courseId);
+        String tm  = t(term);
+        if (cid.isEmpty() || tm.isEmpty()) return List.of();
+        return scoreRepository.findByCourseIdAndTermIgnoreCase(cid, tm);
     }
 
     public List<Score> listByStudentAndTerm(String studentId, String term) {
-        if (isBlank(studentId) || isBlank(term)) return List.of();
-        return scoreRepository.findByIdStudentIdAndIdTerm(studentId.trim(), term.trim());
+        String sid = t(studentId);
+        String tm  = t(term);
+        if (sid.isEmpty() || tm.isEmpty()) return List.of();
+        return scoreRepository.findByStudentIdAndTermIgnoreCase(sid, tm);
     }
 
-    // 可选别名（如果其它类调用的是 listScoresBy*）
     public List<Score> listScoresByCourseAndTerm(String courseId, String term) { return listByCourseAndTerm(courseId, term); }
     public List<Score> listScoresByStudentAndTerm(String studentId, String term) { return listByStudentAndTerm(studentId, term); }
 
@@ -58,16 +60,23 @@ public class ScoreService {
         validateScoreRange(usualScore);
         validateScoreRange(examScore);
 
-        // 一致性校验：必须存在选课记录
-        enrollmentRepository.findByStudentIdAndCourseIdAndTerm(studentId.trim(), courseId.trim(), term.trim())
-                .orElseThrow(() -> new IllegalArgumentException("该学生在该学期未选该课程，无法录入成绩"));
+        String sid = studentId.trim();
+        String cid = courseId.trim();
+        String tm  = term.trim();
 
-        ScoreId id = new ScoreId(studentId.trim(), courseId.trim(), term.trim());
-        Score score = scoreRepository.findById(id).orElseGet(() -> {
-            Score s = new Score();
-            s.setId(id);
-            return s;
-        });
+        // 一致性校验：必须存在选课记录（大小写不敏感，openGauss 友好）
+        boolean enrolled = enrollmentRepository.existsEnrollmentIgnoreCase(sid, cid, tm);
+        if (!enrolled) {
+            throw new IllegalArgumentException("该学生在该学期未选该课程，无法录入成绩");
+        }
+
+        // 先按大小写不敏感查找已有成绩，若无则新建
+        Score score = scoreRepository.findOneIgnoreCase(sid, cid, tm)
+                .orElseGet(() -> {
+                    Score s = new Score();
+                    s.setId(new ScoreId(sid, cid, tm));
+                    return s;
+                });
 
         score.setUsualScore(usualScore);
         score.setExamScore(examScore);
@@ -75,7 +84,6 @@ public class ScoreService {
         scoreRepository.save(score);
     }
 
-    // 兼容旧调用：有的代码还调用 updateScore(...)，这里作为别名转到 upsertScore
     @Transactional
     public void updateScore(String studentId, String courseId, String term, BigDecimal usualScore, BigDecimal examScore) {
         upsertScore(studentId, courseId, term, usualScore, examScore);
@@ -145,4 +153,5 @@ public class ScoreService {
     }
 
     private boolean isBlank(String s) { return s == null || s.trim().isEmpty(); }
+    private String t(String s) { return s == null ? "" : s.trim(); }
 }

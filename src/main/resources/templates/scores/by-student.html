@@ -15,7 +15,7 @@
     </div>
     <div class="col-md-4">
         <label class="form-label">学期</label>
-        <input name="term" th:value="${term}" class="form-control" placeholder="2025-2026-1"/>
+        <input name="term" th:value="${term}" class="form-control" placeholder="2025-2026-1" required/>
     </div>
     <div class="col-md-4 d-flex align-items-end">
         <button type="submit" class="btn btn-primary">查询</button>
@@ -51,14 +51,23 @@
     </div>
 </div>
 
-<div th:if="${studentId != null && studentId != ''}">
-    <h5>查询结果：学号 <span th:text="${studentId}"></span>，学期 <span th:text="${term}"></span></h5>
+<!-- 统一结果变量：优先使用 scores，其次 results，再次 rows -->
+<div th:with="list=${scores != null ? scores : (results != null ? results : rows)}"
+     th:if="${studentId != null && studentId != ''}">
 
-    <div th:if="${resultCount == 0}">
-        <div class="alert alert-warning">未找到成绩记录。</div>
+    <h5>查询结果：学号 <span th:text="${studentId}"></span>，学期 <span th:text="${term}"></span>
+        <span class="ms-2 small text-muted" th:if="${list != null}">
+            共 <strong th:text="${#lists.size(list)}">0</strong> 条
+        </span>
+    </h5>
+
+    <!-- 无数据提示 -->
+    <div th:if="${list == null or #lists.isEmpty(list)}" class="alert alert-warning mt-2">
+        未找到成绩记录。
     </div>
 
-    <div th:if="${resultCount > 0}">
+    <!-- 有数据时显示表格 -->
+    <div th:if="${list != null and !#lists.isEmpty(list)}" class="mt-2">
         <table class="table table-bordered table-hover">
             <thead class="table-light">
             <tr>
@@ -69,8 +78,8 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="s : ${scores}">
-                <td th:text="${s.id.courseId}">C001</td>
+            <tr th:each="s : ${list}">
+                <td th:text="${s.id != null ? s.id.courseId : ''}">C001</td>
                 <td th:text="${s.usualScore}">88.00</td>
                 <td th:text="${s.examScore}">92.00</td>
                 <td th:text="${s.totalScore}">90.40</td>

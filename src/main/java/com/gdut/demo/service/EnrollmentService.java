@@ -76,14 +76,16 @@ public class EnrollmentService {
 
     public List<EnrollmentRecord> getEnrollmentRecords(String studentId, String term, String status) {
         String sid = n(studentId);
-        String tm = n(term);
-        String st = n(status);
+        String tm  = n(term);
+        String st  = n(status);
 
         List<Enrollment> rows;
-        if (!sid.isEmpty() && !tm.isEmpty() && !st.isEmpty()) {
-            rows = enrollmentRepository.findByStudentIdAndTermAndStatus(sid, tm, st);
-        } else if (!sid.isEmpty() && !tm.isEmpty()) {
-            rows = enrollmentRepository.findByStudentIdAndTerm(sid, tm);
+        if (!sid.isEmpty() && !tm.isEmpty()) {
+            // 改为大小写不敏感查询，避免因为大小写不同查不到
+            rows = enrollmentRepository.findByStudentIdAndTermIgnoreCase(sid, tm);
+            if (!st.isEmpty()) {
+                rows = rows.stream().filter(e -> st.equalsIgnoreCase(n(e.getStatus()))).toList();
+            }
         } else {
             rows = List.of();
         }
@@ -132,9 +134,11 @@ public class EnrollmentService {
         String sid = n(studentId);
         String tm  = n(term);
         if (sid.isEmpty() || tm.isEmpty()) return BigDecimal.ZERO;
-        List<Enrollment> rows = enrollmentRepository.findByStudentIdAndTermAndStatus(sid, tm, "selected");
+        // 使用大小写不敏感的查询，统计更准确
+        List<Enrollment> rows = enrollmentRepository.findByStudentIdAndTermIgnoreCase(sid, tm);
         BigDecimal sum = BigDecimal.ZERO;
         for (Enrollment e : rows) {
+            if (!"selected".equalsIgnoreCase(n(e.getStatus()))) continue;
             Course c = courseRepository.findById(e.getCourseId()).orElse(null);
             if (c != null && c.getCredits() != null) {
                 sum = sum.add(c.getCredits());
@@ -147,16 +151,16 @@ public class EnrollmentService {
 
     public List<Enrollment> listByStudentAndTerm(String studentId, String term) {
         String sid = n(studentId);
-        String tm = n(term);
+        String tm  = n(term);
         if (sid.isEmpty() || tm.isEmpty()) return List.of();
-        return enrollmentRepository.findByStudentIdAndTerm(sid, tm);
+        return enrollmentRepository.findByStudentIdAndTermIgnoreCase(sid, tm);
     }
 
     public List<Enrollment> listByCourseAndTerm(String courseId, String term) {
         String cid = n(courseId);
-        String tm = n(term);
+        String tm  = n(term);
         if (cid.isEmpty() || tm.isEmpty()) return List.of();
-        return enrollmentRepository.findByCourseIdAndTerm(cid, tm);
+        return enrollmentRepository.findByCourseIdAndTermIgnoreCase(cid, tm);
     }
 
     /* ================= 单条与批量（含上限校验） ================= */
@@ -175,8 +179,8 @@ public class EnrollmentService {
                 .orElseThrow(() -> new IllegalArgumentException("所选课程不存在：" + cid));
         BigDecimal courseCredits = course.getCredits() == null ? BigDecimal.ZERO : course.getCredits();
 
-        // 重复选课
-        if (enrollmentRepository.existsByStudentIdAndCourseIdAndTerm(sid, cid, tm)) {
+        // 重复选课（openGauss 兼容的原生 exists，大小写不敏感）
+        if (enrollmentRepository.existsEnrollmentIgnoreCase(sid, cid, tm)) {
             throw new IllegalStateException("学生已选过该课程：" + cid);
         }
 
@@ -254,7 +258,8 @@ public class EnrollmentService {
         String cid = n(courseId);
         String tm  = n(term);
         if (sid.isEmpty() || cid.isEmpty() || tm.isEmpty()) return;
-        enrollmentRepository.deleteByStudentIdAndCourseIdAndTerm(sid, cid, tm);
+        // 使用大小写不敏感的原生删除，避免因大小写不一致删除不到
+        enrollmentRepository.deleteIgnoreCase(sid, cid, tm);
     }
 
     @Transactional
@@ -264,7 +269,9 @@ public class EnrollmentService {
         String tm  = n(term);
         String st  = n(status);
         if (sid.isEmpty() || cid.isEmpty() || tm.isEmpty() || st.isEmpty()) return;
-        enrollmentRepository.findByStudentIdAndCourseIdAndTerm(sid, cid, tm).ifPresent(e -> {
+
+        // 使用原生 LIMIT 1 的大小写不敏感查询，避免 fetch first ? 语法问题
+        enrollmentRepository.findOneIgnoreCaseNative(sid, cid, tm).ifPresent(e -> {
             e.setStatus(st);
             enrollmentRepository.save(e);
         });

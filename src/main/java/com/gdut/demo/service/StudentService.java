@@ -36,7 +36,6 @@ public class StudentService {
                 .findByStudentIdContainingIgnoreCaseOrNameContainingIgnoreCaseOrDeptIdContainingIgnoreCase(kw, kw, kw);
     }
 
-    // 组合查询：学号单独给则走精确匹配；其它情况使用原生 ILIKE 组合过滤
     public List<Student> searchByFilters(String studentId, String name, String deptId) {
         String sid = blankToNull(studentId);
         String nm  = blankToNull(name);
@@ -51,6 +50,12 @@ public class StudentService {
     public Optional<Student> findById(String studentId) {
         if (studentId == null) return Optional.empty();
         return studentRepository.findById(studentId.trim());
+    }
+
+    // 改为使用原生 LIMIT 1 的大小写不敏感查询，避免 openGauss 语法错误
+    public Optional<Student> findByIdIgnoreCase(String studentId) {
+        if (studentId == null) return Optional.empty();
+        return studentRepository.findOneIgnoreCaseNative(studentId.trim());
     }
 
     public Student save(Student student) {
@@ -69,17 +74,20 @@ public class StudentService {
 
     @Transactional
     public void graduate(String studentId, String note, LocalDateTime movedAt) {
-        moveToHistory(studentId, "graduate", note, movedAt);
+        moveToHistoryIgnoreCase(studentId, "graduate", note, movedAt);
     }
 
     @Transactional
     public void transferOut(String studentId, String note, LocalDateTime movedAt) {
-        moveToHistory(studentId, "transfer_out", note, movedAt);
+        moveToHistoryIgnoreCase(studentId, "transfer_out", note, movedAt);
     }
 
     @Transactional
     public void transferIn(Student newStudent, String note, LocalDateTime movedAt) {
+        if (newStudent.getStudentId() != null) newStudent.setStudentId(newStudent.getStudentId().trim());
+        if (newStudent.getDeptId() != null) newStudent.setDeptId(newStudent.getDeptId().trim());
         studentRepository.save(newStudent);
+
         StudentHistory h = new StudentHistory();
         h.setStudentId(newStudent.getStudentId());
         h.setName(newStudent.getName());
@@ -89,8 +97,8 @@ public class StudentService {
         historyRepository.save(h);
     }
 
-    private void moveToHistory(String studentId, String reason, String note, LocalDateTime movedAt) {
-        Student s = studentRepository.findById(studentId.trim())
+    private void moveToHistoryIgnoreCase(String studentId, String reason, String note, LocalDateTime movedAt) {
+        Student s = findByIdIgnoreCase(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("学生不存在：" + studentId));
         StudentHistory h = new StudentHistory();
         h.setStudentId(s.getStudentId());

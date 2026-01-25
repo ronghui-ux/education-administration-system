@@ -8,6 +8,29 @@
 <body class="container mt-4">
 <h2>学生历史管理（转学/毕业）</h2>
 
+<!-- 消息提示 -->
+<div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+<div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+<!-- 转出表单示例 -->
+<form th:action="@{/students/history/transfer-out}" method="post" class="card card-body">
+    <div class="mb-2">
+        <label class="form-label">学号</label>
+        <input type="text" class="form-control" name="studentId" required style="text-transform: uppercase;">
+    </div>
+    <div class="mb-2">
+        <label class="form-label">备注</label>
+        <input type="text" class="form-control" name="note">
+    </div>
+    <div class="mb-2">
+        <label class="form-label">发生时间</label>
+        <input type="datetime-local" class="form-control" name="movedAt"
+               th:value="${#temporals.format(now, 'yyyy-MM-dd''T''HH:mm')}">
+        <div class="form-text">可留空（默认当前时间）。也支持仅日期：yyyy-MM-dd。</div>
+    </div>
+    <button class="btn btn-warning">转出处理</button>
+</form>
+
 <div class="row g-3">
     <div class="col-md-6">
         <div class="card mb-4">
@@ -27,27 +50,6 @@
                         <input name="movedAt" class="form-control" placeholder="YYYY-MM-DDTHH:mm（可留空用当前时间）"/>
                     </div>
                     <button type="submit" class="btn btn-danger">毕业处理</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header">转出（移入历史库并移出在读库）</div>
-            <div class="card-body">
-                <form method="post" th:action="@{/students/history/transfer-out}">
-                    <div class="mb-2">
-                        <label class="form-label">学号</label>
-                        <input name="studentId" class="form-control" required/>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">备注</label>
-                        <input name="note" class="form-control"/>
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">发生时间</label>
-                        <input name="movedAt" class="form-control" placeholder="YYYY-MM-DDTHH:mm（可留空）"/>
-                    </div>
-                    <button type="submit" class="btn btn-warning">转出处理</button>
                 </form>
             </div>
         </div>

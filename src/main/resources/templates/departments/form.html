@@ -1,29 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/>
-    <title>系信息表单</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <meta charset="UTF-8">
+    <title th:text="${mode=='edit' ? '编辑系' : '新增系'}">新增系</title>
+    <!-- 用 CDN，立刻有样式 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="container mt-4">
-<h2 th:text="${department != null && department.deptId != null ? '编辑系信息' : '新增系'}">系信息表单</h2>
-<form th:object="${department}" th:action="@{/departments}" method="post" class="row g-3">
-    <div class="col-md-4">
+<body class="container py-3">
+<h3 th:text="${mode=='edit' ? '编辑系' : '新增系'}" class="mb-3">新增系</h3>
+
+<div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+<div th:if="${err}" class="alert alert-danger" th:text="${err}"></div>
+
+<form th:action="@{/departments/save}" method="post" class="card card-body shadow-sm">
+    <!-- 系号 -->
+    <div class="mb-3">
         <label class="form-label">系号</label>
-        <input th:field="*{deptId}" class="form-control" required/>
+        <input class="form-control"
+               name="deptId"
+               th:value="${dept != null ? dept.deptId : (department != null ? department.deptId : '')}"
+               th:readonly="${mode=='edit'}"
+               required />
+        <div class="form-text" th:if="${mode=='create'}">示例：CS、EE</div>
     </div>
-    <div class="col-md-8">
-        <label class="form-label">名称</label>
-        <input th:field="*{name}" class="form-control" required/>
+
+    <!-- 系名称 -->
+    <div class="mb-3">
+        <label class="form-label">系名称</label>
+        <input class="form-control"
+               name="name"
+               th:value="${dept != null ? dept.name : (department != null ? department.name : '')}"
+               required />
     </div>
-    <div class="col-12">
+
+    <!-- 简介 -->
+    <div class="mb-3">
         <label class="form-label">简介</label>
-        <textarea th:field="*{intro}" class="form-control" rows="3"></textarea>
+        <textarea class="form-control" rows="4" name="intro"
+                  th:text="${dept != null ? dept.intro : (department != null ? department.intro : '')}"></textarea>
     </div>
-    <div class="col-12">
+
+    <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">保存</button>
-        <a th:href="@{/departments}" class="btn btn-outline-secondary ms-2">返回</a>
+        <a class="btn btn-secondary" th:href="@{/departments}">返回</a>
     </div>
 </form>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -4,14 +4,60 @@ import com.gdut.demo.model.Score;
 import com.gdut.demo.model.ScoreId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface ScoreRepository extends JpaRepository<Score, ScoreId> {
 
+    // 保留派生查询（大小写敏感，旧代码可能使用）
     List<Score> findByIdCourseIdAndIdTerm(String courseId, String term);
     List<Score> findByIdStudentIdAndIdTerm(String studentId, String term);
+
+    /* ============== 大小写不敏感 + 去除两端空格（openGauss 友好） ============== */
+
+    // 按课程 + 学期
+    @Query(value = """
+        select g.*
+        from edu.grade g
+        where upper(btrim(g.course_id)) = upper(btrim(:cid))
+          and upper(btrim(g.term))      = upper(btrim(:term))
+        order by g.student_id
+    """, nativeQuery = true)
+    List<Score> findByCourseIdAndTermIgnoreCase(@Param("cid") String courseId,
+                                                @Param("term") String term);
+
+    // 按学生 + 学期
+    @Query(value = """
+        select g.*
+        from edu.grade g
+        where upper(btrim(g.student_id)) = upper(btrim(:sid))
+          and upper(btrim(g.term))       = upper(btrim(:term))
+        order by g.course_id
+    """, nativeQuery = true)
+    List<Score> findByStudentIdAndTermIgnoreCase(@Param("sid") String studentId,
+                                                 @Param("term") String term);
+
+    // 单条定位（避免 fetch first ? rows only；并做 btrim 处理）
+    @Query(value = """
+        select g.*
+        from edu.grade g
+        where upper(btrim(g.student_id)) = upper(btrim(:sid))
+          and upper(btrim(g.course_id))  = upper(btrim(:cid))
+          and upper(btrim(g.term))       = upper(btrim(:term))
+        limit 1
+    """, nativeQuery = true)
+    Optional<Score> findOneIgnoreCase(@Param("sid") String studentId,
+                                      @Param("cid") String courseId,
+                                      @Param("term") String term);
+
+    /* ============== 新增：按课程统计成绩引用（大小写不敏感 + 去除两端空格） ============== */
+    @Query(value = "select count(*) from edu.grade where upper(btrim(course_id)) = upper(btrim(:cid))", nativeQuery = true)
+    long countByCourseIdIgnoreCase(@Param("cid") String courseId);
+
+    /* ============== 组合搜索与报表（保持原实现不变） ============== */
 
     @Query(value = """
       select
@@ -49,7 +95,7 @@ public interface ScoreRepository extends JpaRepository<Score, ScoreId> {
         g.student_id  as studentId,
         st.name       as studentName,
         st.dept_id    as deptId,
-        g.course_id   as courseId,
+        g.course_id   as CourseId,
         c.name        as courseName,
         s.name        as teacherName,
         g.term        as term,
